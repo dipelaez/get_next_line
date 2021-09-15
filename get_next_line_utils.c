@@ -6,7 +6,7 @@
 /*   By: dipelaez <dipelaez@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/09 15:29:51 by dipelaez          #+#    #+#             */
-/*   Updated: 2021/09/10 11:42:55 by dipelaez         ###   ########.fr       */
+/*   Updated: 2021/09/15 11:29:12 by dipelaez         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,4 +115,30 @@ char	*ft_strchr(const char	*s, int	c)
 	if (*s == c)
 		return ((char *)s);
 	return (0);
+}
+
+void	ft_strclr(char *s)
+{
+	if (s)
+	{
+		while (*s)
+		{
+			*s = '\0';
+			s++;
+		}
+	}
+}
+
+char	*ft_strcpy(char *dst, const char *src)
+{
+	int	i;
+
+	i = 0;
+	while (src[i])
+	{
+		dst[i] = src[i];
+		i++;
+	}
+	dst[i] = '\0';
+	return (dst);
 }

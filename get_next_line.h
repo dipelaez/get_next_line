@@ -6,7 +6,7 @@
 /*   By: dipelaez <dipelaez@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/09 15:29:56 by dipelaez          #+#    #+#             */
-/*   Updated: 2021/09/10 11:42:52 by dipelaez         ###   ########.fr       */
+/*   Updated: 2021/09/15 11:29:32 by dipelaez         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,5 +29,7 @@ size_t	ft_strlen(const char	*s);
 char	*ft_strjoin(char const *s1, char const *s2);
 char	*ft_strnew(size_t size);
 char	*ft_strchr(const char	*s, int	c);
+void	ft_strclr(char *s);
+char	*ft_strcpy(char *dst, const char *src);
 
 #endif
