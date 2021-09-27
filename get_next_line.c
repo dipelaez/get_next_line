@@ -6,69 +6,91 @@
 /*   By: dipelaez <dipelaez@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/09 15:29:42 by dipelaez          #+#    #+#             */
-/*   Updated: 2021/09/15 13:03:01 by dipelaez         ###   ########.fr       */
+/*   Updated: 2021/09/27 16:06:51 by dipelaez         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-char	*check_remainder(char *remainder, char **line)
+static void	free_ptr(char **ptr)
 {
-	char	*p_n;
+	free(*ptr);
+	*ptr = NULL;
+}
 
-	p_n = NULL;
-	if (remainder)
-		if ((p_n = ft_strchr(remainder, '\n')))
-		{
-			*p_n = '\0';
-			*line = ft_strdup(remainder);
-			ft_strcpy(remainder, ++p_n);
-		}
-		else
-		{
-			*line = ft_strdup(remainder);
-			ft_strclr(remainder);
-		}
-	else
-		*line = ft_strnew(1);
-	return (p_n);
+static char	*extract_line(char **buffer_backup)
+{
+	int		i;
+	char	*line;
+	char	*temp_free;
+
+	i = 0;
+	while ((*buffer_backup[i] != '\0' && (*buffer_backup)[i] != '\n'))
+		i++;
+	temp_free = *buffer_backup;
+	line = ft_substr(temp_free, 0, i + 1);
+	*buffer_backup = ft_strdup(&(*buffer_backup)[i + 1]);
+	free_ptr(&temp_free);
+	return (line);
+}
+
+static int	read_file(int fd, char **buffer, char **buffer_backup)
+{
+	int		bytes_read;
+	char	*temp_free;
+
+	bytes_read = 1;
+	while (!ft_strchr(*buffer_backup, '\n') && bytes_read)
+	{
+		bytes_read = read(fd, *buffer, BUFFER_SIZE);
+		if (bytes_read == -1)
+			return (bytes_read);
+		(*buffer)[bytes_read] = '\0';
+		temp_free = *buffer_backup;
+		*buffer_backup = ft_strjoin(temp_free, *buffer);
+		free_ptr(&temp_free);
+	}
+	return (bytes_read);
+}
+
+static char	*get_line(int fd, char **buffer, char **buffer_backup)
+{
+	int		bytes_read;
+	char	*temp_free;
+
+	if (ft_strchr(*buffer_backup, '\n'))
+		return (extract_line(buffer_backup));
+	bytes_read = read_file(fd, buffer, buffer_backup);
+	if ((bytes_read == 0 || bytes_read == -1) && !**buffer_backup)
+	{
+		free_ptr(buffer_backup);
+		return (NULL);
+	}
+	if (!ft_strchr(*buffer_backup, '\n'))
+		return (extract_line(buffer_backup));
+	if (!ft_strchr(*buffer_backup, '\n') && **buffer_backup)
+	{
+		temp_free = ft_strdup(*buffer_backup);
+		free_ptr(buffer_backup);
+		return (temp_free);
+	}
+	return (NULL);
 }
 
 char	*get_next_line(int fd)
 {
-	static char		*remainder;
-	char			buf[BUFFER_SIZE + 1];
-	char			*line;
-	char			*p_n;
-	int				byte_was_read;
-	char			*tmp;
+	static char		*buffer_backup[OPEN_MAX + 1];
+	char			*buffer;
+	char			*result;
 
-	p_n = check_remainder(remainder, &line);
-	while (!p_n && (byte_was_read = read(fd, buf, BUFFER_SIZE)))
-	{
-		buf[byte_was_read] = '\0';
-		if ((p_n = ft_strchr(buf, '\n')))
-		{
-			*p_n = '\0';
-			p_n++;
-			remainder = ft_strdup(p_n);
-		}
-		tmp = line;
-		line = ft_strjoin(line, buf);
-		free(tmp);
-	}
-	printf("%s\n",line);
-	return (0);	// byte_was_read != 0, remainder lenght != 0, line lenght != 0
-}
-
-int	main(void)
-{
-	int		fd;
-
-	fd = open("text.txt", O_RDONLY);
-	
-	get_next_line(fd);
-	get_next_line(fd);
-	get_next_line(fd);
-	
+	if (fd < 0 || BUFFER_SIZE <= 0 || fd > OPEN_MAX)
+		return (NULL);
+	buffer = (char *)malloc(sizeof(char) * BUFFER_SIZE + 1);
+	if (!buffer)
+		return (NULL);
+	if (!buffer_backup[fd])
+		buffer_backup[fd] = ft_strdup("");
+	result = get_line(fd, &buffer, &buffer_backup[fd]);
+	free_ptr(&buffer);
+	return (result);
 }
